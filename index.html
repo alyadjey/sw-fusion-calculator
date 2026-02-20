@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="uk">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,8 +8,7 @@
 </head>
 <body>
   <header class="container">
-    <h1>Hexagram Fusion Calculator (demo)</h1>
-    <p class="muted">Вибір іконками • дерево гілками (компактно) • “треба/є/не вистачає” з урахуванням крафту.</p>
+    <h1>Hexagram Fusion Calculator</h1>
   </header>
 
   <main class="container">
@@ -23,36 +22,36 @@
         </div>
 
         <label class="inline">
-          Кількість ф’юзів:
+          Fusion quantity:
           <input id="targetCount" type="number" min="1" value="1" />
         </label>
       </div>
 
-      <div class="muted tiny">Обери монстра:</div>
+      <div class="muted tiny">Select a monster:</div>
       <div id="monsterGrid" class="grid"></div>
     </section>
 
     <!-- Inventory -->
     <section class="panel">
       <div class="row between">
-        <h2 class="h2">Інвентар (скільки вже маєш)</h2>
-        <button id="resetOwnedBtn" type="button">Скинути інвентар</button>
+        <h2 class="h2">Inventory (how many you already own)</h2>
+        <button id="resetOwnedBtn" type="button">Reset inventory</button>
       </div>
       <div class="muted tiny">
-        Показуються монстри, які зустрічаються в дереві (інгредієнти будь-якого рівня).
+        Displays monsters that appear in the fusion tree (ingredients of any level).
       </div>
       <div id="inventory" class="inventory"></div>
     </section>
 
     <!-- Tree -->
     <section class="panel">
-      <h2 class="h2">Дерево ф’южну</h2>
+      <h2 class="h2">Fusion Tree</h2>
       <div id="tree" class="tree"></div>
     </section>
 
     <!-- Summary -->
     <section class="panel">
-      <h2 class="h2">Підсумок</h2>
+      <h2 class="h2">Summary</h2>
       <div id="summary" class="summary"></div>
     </section>
 
@@ -60,7 +59,8 @@
 
   <footer class="container muted">
     <small>
-      Дані редагуються у <code>data/monsters.js</code>. Для своїх іконок додай поле <code>img</code>.
+      Data can be edited in <code>data/monsters.js</code>.  
+      To use custom icons, add the <code>img</code> field.
     </small>
   </footer>
 
