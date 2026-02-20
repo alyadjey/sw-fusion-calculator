@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SW Hexagram Fusion Calculator</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>Hexagram Fusion Calculator (demo)</h1>
+    <p class="muted">Вибір іконками • дерево гілками (компактно) • “треба/є/не вистачає” з урахуванням крафту.</p>
+  </header>
+
+  <main class="container">
+
+    <!-- Controls -->
+    <section class="panel">
+      <div class="row">
+        <div class="seg" aria-label="Stars filter">
+          <button class="segBtn isActive" data-stars="5" type="button">5★</button>
+          <button class="segBtn" data-stars="4" type="button">4★</button>
+        </div>
+
+        <label class="inline">
+          Кількість ф’юзів:
+          <input id="targetCount" type="number" min="1" value="1" />
+        </label>
+      </div>
+
+      <div class="muted tiny">Обери монстра:</div>
+      <div id="monsterGrid" class="grid"></div>
+    </section>
+
+    <!-- Inventory -->
+    <section class="panel">
+      <div class="row between">
+        <h2 class="h2">Інвентар (скільки вже маєш)</h2>
+        <button id="resetOwnedBtn" type="button">Скинути інвентар</button>
+      </div>
+      <div class="muted tiny">
+        Показуються монстри, які зустрічаються в дереві (інгредієнти будь-якого рівня).
+      </div>
+      <div id="inventory" class="inventory"></div>
+    </section>
+
+    <!-- Tree -->
+    <section class="panel">
+      <h2 class="h2">Дерево ф’южну</h2>
+      <div id="tree" class="tree"></div>
+    </section>
+
+    <!-- Summary -->
+    <section class="panel">
+      <h2 class="h2">Підсумок</h2>
+      <div id="summary" class="summary"></div>
+    </section>
+
+  </main>
+
+  <footer class="container muted">
+    <small>
+      Дані редагуються у <code>data/monsters.js</code>. Для своїх іконок додай поле <code>img</code>.
+    </small>
+  </footer>
+
+  <script src="./data/monsters.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
