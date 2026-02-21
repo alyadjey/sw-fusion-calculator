@@ -412,7 +412,7 @@ function renderGroupBlock(title, rows) {
 
   const tot = document.createElement("div");
   tot.className = "sumTotal";
-  tot.textContent = `The amount “needed”: ${total}`;
+
 
   head.appendChild(t);
   head.appendChild(tot);
@@ -476,7 +476,6 @@ function renderEssencesBlock(essTotals) {
       <div class="essCard">
         <div class="essCardTitle">
           <span>${typeLabel(type)}</span>
-          <span class="muted tiny">Amount: ${sum}</span>
         </div>
         <div class="essRows">
           <div class="essRow"><span>${gradeLabel("high")}</span><strong>${g.high || 0}</strong></div>
@@ -537,7 +536,7 @@ function renderSummary(rootId, grossNeed, missing) {
 
   summaryEl.innerHTML = `
     <div class="summaryGrid">
-      <div class="summaryItem"><span>Goal (root)</span><strong>${state.targetCount}</strong></div>
+      <div class="summaryItem"><span>Goal</span><strong>${state.targetCount}</strong></div>
       <div class="summaryItem"><span>Total ingredients needed</span><strong>${totalNeed}</strong></div>
       ${show4Row ? `<div class="summaryItem"><span>4★</span><strong>${need4}</strong></div>` : ``}
       <div class="summaryItem"><span>3★</span><strong>${need3}</strong></div>
