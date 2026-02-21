@@ -318,6 +318,7 @@ button:hover{background:var(--btnHover);cursor:pointer}
   gap:10px;
   font-size:12px;
   color:var(--muted);
+  align-items:center;
 }
 .essRow strong{color:var(--text);font-weight:800}
 
@@ -385,3 +386,16 @@ button:hover{background:var(--btnHover);cursor:pointer}
 .badGood{color:var(--good)}
 .badBad{color:var(--bad)}
 code{color:#cfe0ff}
+
+.essLeft{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.essIcon{
+  width:35px;
+  height:35px;
+  border-radius:6px;
+  object-fit:cover;
+  border:1px solid var(--line2);
+}
