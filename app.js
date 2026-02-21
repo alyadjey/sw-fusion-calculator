@@ -521,8 +521,13 @@ function renderSummary(rootId, grossNeed, missing) {
     };
   });
 
-  const totalNeed = rows.reduce((s, r) => s + r.need, 0);
-  const totalMiss = rows.reduce((s, r) => s + r.miss, 0);
+  const baseRows = rows.filter(r => {
+  const m = MONSTERS[r.id];
+  return !hasRecipe(m);
+});
+
+const totalNeed = baseRows.reduce((s, r) => s + r.need, 0);
+const totalMiss = baseRows.reduce((s, r) => s + r.miss, 0);
 
   const groups = groupRowsByStars(rows);
   const need4 = groups[4].reduce((s, r) => s + r.need, 0);
