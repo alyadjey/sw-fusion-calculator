@@ -9,10 +9,12 @@ const targetCountEl = document.getElementById("targetCount");
 const segBtns = Array.from(document.querySelectorAll(".segBtn"));
 const resetOwnedBtn = document.getElementById("resetOwnedBtn");
 
+
 let state = {
   starsFilter: 5,
   rootId: null,
   targetCount: 1,
+  targetDraft: "1",
   owned: loadOwned(),
 };
 
@@ -52,6 +54,19 @@ function svgDataUri({ bg = "#2f80ed", text = "??" } = {}) {
   </text>
 </svg>`;
   return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+}
+
+const ESS_ICON = {
+  wind:  { low:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-wind-low.png",  mid:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-wind-mid.png",  high:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-wind-high.png" },
+  water: { low:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-water-low.png", mid:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-water-mid.png", high:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-water-high.png" },
+  fire:  { low:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-fire-low.png",  mid:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-fire-mid.png",  high:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-fire-high.png" },
+  light: { low:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-light-low.png", mid:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-light-mid.png", high:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-light-high.png" },
+  dark:  { low:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-darkness-low.png",  mid:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-darkness-mid.png",  high:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-darkness-high.png" },
+  magic: { low:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-magic-low.png", mid:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-magic-mid.png", high:"https://summonerswarskyarena.info/wp-content/themes/swsa/assets/img/essence-of-magic-high.png" },
+};
+
+function essIcon(type, grade){
+  return ESS_ICON?.[type]?.[grade] || "";
 }
 
 function getIconUrl(m) {
@@ -101,8 +116,23 @@ function setRoot(id) {
 }
 
 function setTargetCount(v) {
-  state.targetCount = clampInt(v, 1);
-  targetCountEl.value = String(state.targetCount);
+  const raw = String(v).trim();
+
+  if (raw === "") {
+    state.targetDraft = "";
+    return;
+  }
+
+  let n = clampInt(raw, 1);
+
+
+  if (n < 1) n = 1;
+
+  state.targetCount = n;
+  state.targetDraft = String(n);
+
+  targetCountEl.value = state.targetDraft;
+
   refreshAll();
 }
 
@@ -478,9 +508,29 @@ function renderEssencesBlock(essTotals) {
           <span>${typeLabel(type)}</span>
         </div>
         <div class="essRows">
-          <div class="essRow"><span>${gradeLabel("high")}</span><strong>${g.high || 0}</strong></div>
-          <div class="essRow"><span>${gradeLabel("mid")}</span><strong>${g.mid || 0}</strong></div>
-          <div class="essRow"><span>${gradeLabel("low")}</span><strong>${g.low || 0}</strong></div>
+          <div class="essRow">
+  <span class="essLeft">
+    <img class="essIcon" src="${essIcon(type,"high")}" alt="${type} high" />
+    ${gradeLabel("high")}
+  </span>
+  <strong>${g.high || 0}</strong>
+</div>
+
+<div class="essRow">
+  <span class="essLeft">
+    <img class="essIcon" src="${essIcon(type,"mid")}" alt="${type} mid" />
+    ${gradeLabel("mid")}
+  </span>
+  <strong>${g.mid || 0}</strong>
+</div>
+
+<div class="essRow">
+  <span class="essLeft">
+    <img class="essIcon" src="${essIcon(type,"low")}" alt="${type} low" />
+    ${gradeLabel("low")}
+  </span>
+  <strong>${g.low || 0}</strong>
+</div>
         </div>
       </div>
     `;
@@ -595,6 +645,12 @@ function applyTreeAutoScale() {
 }
 
 window.addEventListener("resize", () => applyTreeAutoScale());
+
+targetCountEl.addEventListener("blur", () => {
+  if (targetCountEl.value.trim() === "") {
+    targetCountEl.value = String(state.targetCount);
+  }
+});
 
 segBtns.forEach(btn => btn.addEventListener("click", () => setStarsFilter(btn.dataset.stars)));
 targetCountEl.addEventListener("input", () => setTargetCount(targetCountEl.value));
