@@ -12,8 +12,6 @@
   </header>
 
   <main class="container">
-
-    <!-- Controls -->
     <section class="panel">
       <div class="row">
         <div class="seg" aria-label="Stars filter">
@@ -31,38 +29,28 @@
       <div id="monsterGrid" class="grid"></div>
     </section>
 
-    <!-- Inventory -->
     <section class="panel">
       <div class="row between">
         <h2 class="h2">Inventory (how many you already own)</h2>
         <button id="resetOwnedBtn" type="button">Reset inventory</button>
       </div>
       <div class="muted tiny">
-        Displays monsters that appear in the fusion tree (ingredients of any level).
+        Displays monsters that appear in the fusion tree.
       </div>
       <div id="inventory" class="inventory"></div>
     </section>
 
-    <!-- Tree -->
     <section class="panel">
       <h2 class="h2">Fusion Tree</h2>
       <div id="tree" class="tree"></div>
     </section>
 
-    <!-- Summary -->
     <section class="panel">
       <h2 class="h2">Summary</h2>
       <div id="summary" class="summary"></div>
     </section>
 
   </main>
-
-  <footer class="container muted">
-    <small>
-      Data can be edited in <code>data/monsters.js</code>.  
-      To use custom icons, add the <code>img</code> field.
-    </small>
-  </footer>
 
   <script src="./data/monsters.js"></script>
   <script src="./app.js"></script>
