@@ -16,7 +16,6 @@ let state = {
   owned: loadOwned(),
 };
 
-// ===== storage =====
 function loadOwned() {
   try { return JSON.parse(localStorage.getItem("sw_owned_clean_v3") || "{}"); }
   catch { return {}; }
@@ -30,7 +29,6 @@ function resetOwned() {
   refreshAll();
 }
 
-// ===== utils =====
 function clampInt(v, min = 0) {
   const n = Number(v);
   if (!Number.isFinite(n)) return min;
@@ -72,10 +70,10 @@ function listByStars(stars) {
     .filter(m => {
       if (m.stars !== s) return false;
 
-      // ✅ якщо вибрано 4★ як ціль — показуємо тільки тих, кого можна гексити (craftable)
+      
       if (s === 4) return hasRecipe(m);
 
-      // для 5★ (і інших зірок, якщо додаси) лишаємо як є
+      
       return true;
     })
     .sort((a, b) => a.name.localeCompare(b.name, "uk"));
@@ -85,7 +83,7 @@ function add(map, id, qty) {
   map[id] = (map[id] || 0) + qty;
 }
 
-// ===== UI: selectors =====
+
 function setStarsFilter(stars) {
   state.starsFilter = Number(stars);
   segBtns.forEach(b => b.classList.toggle("isActive", Number(b.dataset.stars) === state.starsFilter));
@@ -136,13 +134,6 @@ function renderMonsterGrid() {
   }
 }
 
-// ===== CORE LOGIC =====
-
-/**
- * Gross requirements for ingredients only (children and deeper):
- * grossNeed[childId] = how many are required in total
- * grossRoot[rootId] = targetCount (for tree display)
- */
 function computeGross(rootId, targetCount) {
   const grossNeed = {};
   const grossRoot = { [rootId]: targetCount };
@@ -164,13 +155,6 @@ function computeGross(rootId, targetCount) {
   return { grossNeed, grossRoot };
 }
 
-/**
- * Missing with craft and inventory:
- * - uses owned first
- * - if remaining:
- *   missing[id] += remain  (even for craftable 4★)
- *   if craftable -> also require ingredients
- */
 function computeMissing(rootId, targetCount, ownedMap) {
   const owned = { ...ownedMap };
   const missing = {};
@@ -199,14 +183,6 @@ function computeMissing(rootId, targetCount, ownedMap) {
   return { missing };
 }
 
-// ===== Awakening Essences =====
-/**
- * Calculates total essences for all ingredients (NOT 5★).
- * Each ingredient monster is assumed to require awakening -> sum awaken[] * grossNeed[id].
- * Format: totals[type][grade] = qty
- * type: magic | wind | water | fire | light | dark
- * grade: low | mid | high
- */
 function computeEssencesTotals(grossNeed) {
   const totals = {
     magic: { low: 0, mid: 0, high: 0 },
@@ -221,7 +197,6 @@ function computeEssencesTotals(grossNeed) {
     const m = MONSTERS[id];
     if (!m) continue;
 
-    // ✅ 5★ ніколи не рахуємо
     if (m.stars === 5) continue;
 
     const awaken = Array.isArray(m.awaken) ? m.awaken : [];
@@ -237,7 +212,6 @@ function computeEssencesTotals(grossNeed) {
     }
   }
 
-  // прибираємо пусті типи (в UI)
   const cleaned = {};
   for (const [type, g] of Object.entries(totals)) {
     const sum = g.low + g.mid + g.high;
@@ -262,7 +236,6 @@ function gradeLabel(grade) {
   return map[grade] || grade;
 }
 
-// ===== Inventory UI =====
 function renderInventory(grossNeed) {
   inventoryEl.innerHTML = "";
 
@@ -321,32 +294,32 @@ function renderInventory(grossNeed) {
   }
 }
 
-// ===== Tree UI =====
 function makeBadgesUnder(needQty, missQty, isRoot = false) {
   const wrap = document.createElement("div");
-  wrap.className = "fBadgesUnder";
+  wrap.className = "fStats";
 
   const row1 = document.createElement("div");
-  row1.className = "fBadgeRow";
-  const b1 = document.createElement("span");
-  b1.className = "fBadge ok";
-  b1.textContent = isRoot ? `Ціль: ${needQty}` : `Треба: ${needQty}`;
-  row1.appendChild(b1);
+  row1.className = "fStatRow";
+  row1.innerHTML = `
+    <span class="fStatDot dotNeed"></span>
+    <span class="fStatLabel">${isRoot ? "Goal" : "Need"}</span>
+    <span class="fStatVal">${needQty}</span>
+  `;
 
   const row2 = document.createElement("div");
-  row2.className = "fBadgeRow";
-  const b2 = document.createElement("span");
-  b2.className = "fBadge " + (missQty > 0 ? "miss" : "ok");
-  b2.textContent = `Не вистачає: ${missQty}`;
-  row2.appendChild(b2);
+  row2.className = "fStatRow";
+  row2.innerHTML = `
+    <span class="fStatDot ${missQty > 0 ? "dotMiss" : "dotOk"}"></span>
+    <span class="fStatLabel">Missing</span>
+    <span class="fStatVal">${missQty}</span>
+  `;
 
   wrap.appendChild(row1);
   wrap.appendChild(row2);
-
   return wrap;
 }
 
-function buildFuseTreeNode(id, needMapForTree, missingMap, rootId) {
+function buildFuseTreeNode(id, needMapForTree, missingMap, rootId, depth = 0) {
   const m = MONSTERS[id];
 
   const node = document.createElement("div");
@@ -365,15 +338,27 @@ function buildFuseTreeNode(id, needMapForTree, missingMap, rootId) {
 
   node.appendChild(iconWrap);
   node.appendChild(makeBadgesUnder(needQty, missQty, id === rootId));
-  // meta labels intentionally removed
 
   if (hasRecipe(m)) {
+    const group = document.createElement("div");
+    group.className = "fChildGroup";
+
     const children = document.createElement("div");
     children.className = "fChildren";
-    for (const item of m.recipe) {
-      children.appendChild(buildFuseTreeNode(item.id, needMapForTree, missingMap, rootId));
+
+    // ✅ ГІБРИД:
+    // depth=0 (root) -> children in ROW (4★ in a row)
+    // depth>=1 (below each 4★) -> children as COLUMN (ingredients go down)
+    if (depth >= 1) {
+      children.classList.add("vertical");
     }
-    node.appendChild(children);
+
+    for (const item of m.recipe) {
+      children.appendChild(buildFuseTreeNode(item.id, needMapForTree, missingMap, rootId, depth + 1));
+    }
+
+    group.appendChild(children);
+    node.appendChild(group);
   }
 
   return node;
@@ -389,7 +374,7 @@ function renderTree(rootId, grossNeed, grossRoot, missing) {
 
   const tree = document.createElement("div");
   tree.className = "fuseTree";
-  tree.appendChild(buildFuseTreeNode(rootId, needForTree, missing, rootId));
+  tree.appendChild(buildFuseTreeNode(rootId, needForTree, missing, rootId, 0));
 
   scaler.appendChild(tree);
   treeEl.appendChild(scaler);
@@ -397,7 +382,6 @@ function renderTree(rootId, grossNeed, grossRoot, missing) {
   applyTreeAutoScale();
 }
 
-// ===== Summary UI =====
 function groupRowsByStars(rows) {
   const groups = { 4: [], 3: [], 2: [], other: [] };
   for (const r of rows) {
@@ -428,7 +412,7 @@ function renderGroupBlock(title, rows) {
 
   const tot = document.createElement("div");
   tot.className = "sumTotal";
-  tot.textContent = `Сума “треба”: ${total}`;
+  tot.textContent = `The amount “needed”: ${total}`;
 
   head.appendChild(t);
   head.appendChild(tot);
@@ -457,9 +441,9 @@ function renderGroupBlock(title, rows) {
     const nums = document.createElement("div");
     nums.className = "sumRowNums";
     nums.innerHTML = `
-      <span class="sumChip">Треба: <strong>${r.need}</strong></span>
-      <span class="sumChip">Є: <strong>${r.have}</strong></span>
-      <span class="sumChip">Не вистачає: <strong class="${r.miss ? "badBad" : "badGood"}">${r.miss}</strong></span>
+      <span class="sumChip">Need: <strong>${r.need}</strong></span>
+      <span class="sumChip">Available: <strong>${r.have}</strong></span>
+      <span class="sumChip">Missing: <strong class="${r.miss ? "badBad" : "badGood"}">${r.miss}</strong></span>
     `;
 
     main.appendChild(name);
@@ -480,7 +464,6 @@ function renderEssencesBlock(essTotals) {
   const types = Object.keys(essTotals);
   if (!types.length) return "";
 
-  // order: element first, magic last
   const order = ["wind","water","fire","light","dark","magic"];
   types.sort((a,b) => order.indexOf(a) - order.indexOf(b));
 
@@ -493,7 +476,7 @@ function renderEssencesBlock(essTotals) {
       <div class="essCard">
         <div class="essCardTitle">
           <span>${typeLabel(type)}</span>
-          <span class="muted tiny">Сума: ${sum}</span>
+          <span class="muted tiny">Amount: ${sum}</span>
         </div>
         <div class="essRows">
           <div class="essRow"><span>${gradeLabel("high")}</span><strong>${g.high || 0}</strong></div>
@@ -507,8 +490,7 @@ function renderEssencesBlock(essTotals) {
   return `
     <div class="essPanel">
       <div class="essHead">
-        <div class="essTitle">Есенції для пробудження</div>
-        <div class="essSub">Рахуються для 4★/3★/2★ інгредієнтів. 5★ не рахуються.</div>
+        <div class="essTitle">Essences for awakening</div>
       </div>
       <div class="essGrid">${cards}</div>
     </div>
@@ -519,7 +501,7 @@ function renderSummary(rootId, grossNeed, missing) {
   const ingredientIds = Object.keys(grossNeed);
 
   if (!ingredientIds.length) {
-    summaryEl.innerHTML = `<div class="muted tiny">У цього монстра немає рецепту.</div>`;
+    summaryEl.innerHTML = `<div class="muted tiny">This monster has no recipe.</div>`;
     return;
   }
 
@@ -549,19 +531,18 @@ function renderSummary(rootId, grossNeed, missing) {
   const need2 = groups[2].reduce((s, r) => s + r.need, 0);
 
   const rootStars = MONSTERS[rootId]?.stars ?? 0;
-  const show4Row = rootStars === 5; // якщо root 4★ — рядок “…з них 4★” не показуємо
+  const show4Row = rootStars === 5; 
 
-  // essences totals
   const essTotals = computeEssencesTotals(grossNeed);
 
   summaryEl.innerHTML = `
     <div class="summaryGrid">
-      <div class="summaryItem"><span>Ціль (root)</span><strong>${state.targetCount}</strong></div>
-      <div class="summaryItem"><span>Усього інгредієнтів треба</span><strong>${totalNeed}</strong></div>
-      ${show4Row ? `<div class="summaryItem"><span>…з них 4★</span><strong>${need4}</strong></div>` : ``}
-      <div class="summaryItem"><span>…з них 3★</span><strong>${need3}</strong></div>
-      <div class="summaryItem"><span>…з них 2★</span><strong>${need2}</strong></div>
-      <div class="summaryItem"><span>Усього не вистачає</span><strong class="${totalMiss ? "badBad" : "badGood"}">${totalMiss}</strong></div>
+      <div class="summaryItem"><span>Goal (root)</span><strong>${state.targetCount}</strong></div>
+      <div class="summaryItem"><span>Total ingredients needed</span><strong>${totalNeed}</strong></div>
+      ${show4Row ? `<div class="summaryItem"><span>4★</span><strong>${need4}</strong></div>` : ``}
+      <div class="summaryItem"><span>3★</span><strong>${need3}</strong></div>
+      <div class="summaryItem"><span>2★</span><strong>${need2}</strong></div>
+      <div class="summaryItem"><span>Total missing</span><strong class="${totalMiss ? "badBad" : "badGood"}">${totalMiss}</strong></div>
     </div>
 
     ${renderEssencesBlock(essTotals)}
@@ -570,16 +551,15 @@ function renderSummary(rootId, grossNeed, missing) {
   `;
 
   const lists = document.getElementById("summaryLists");
-  if (groups[4].length) lists.appendChild(renderGroupBlock("4★ (детально)", groups[4]));
-  if (groups[3].length) lists.appendChild(renderGroupBlock("3★ (детально)", groups[3]));
-  if (groups[2].length) lists.appendChild(renderGroupBlock("2★ (детально)", groups[2]));
+  if (groups[4].length) lists.appendChild(renderGroupBlock("4★", groups[4]));
+  if (groups[3].length) lists.appendChild(renderGroupBlock("3★", groups[3]));
+  if (groups[2].length) lists.appendChild(renderGroupBlock("2★", groups[2]));
 }
 
-// ===== refresh =====
 function refreshAll() {
   if (!state.rootId) {
     inventoryEl.innerHTML = "";
-    treeEl.innerHTML = `<div class="muted tiny">Немає монстрів у цій категорії.</div>`;
+    treeEl.innerHTML = `<div class="muted tiny">No monsters in this category.</div>`;
     summaryEl.innerHTML = "";
     return;
   }
@@ -597,31 +577,24 @@ function applyTreeAutoScale() {
   const tree = treeEl.querySelector(".fuseTree");
   if (!scaler || !tree) return;
 
-  // reset
   tree.style.transform = "scale(1)";
   scaler.style.height = "auto";
 
-  // widths
   const containerW = treeEl.clientWidth;
   const treeW = tree.scrollWidth;
 
-  // scale to fit width (no upscale)
   const scale = treeW > 0 ? Math.min(1, containerW / treeW) : 1;
   tree.style.transform = `scale(${scale})`;
 
-  // fix layout height (because transform doesn't affect layout)
   const treeH = tree.scrollHeight;
   scaler.style.height = `${Math.ceil(treeH * scale)}px`;
 }
 
-// re-apply on resize
 window.addEventListener("resize", () => applyTreeAutoScale());
 
-// ===== events =====
 segBtns.forEach(btn => btn.addEventListener("click", () => setStarsFilter(btn.dataset.stars)));
 targetCountEl.addEventListener("input", () => setTargetCount(targetCountEl.value));
 resetOwnedBtn.addEventListener("click", resetOwned);
 
-// ===== init =====
 setStarsFilter(5);
 setTargetCount(1);
