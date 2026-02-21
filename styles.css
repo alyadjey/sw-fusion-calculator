@@ -8,6 +8,7 @@
   --btnHover: #24344b;
   --good: #2ecc71;
   --bad: #ff6b6b;
+  --tree-scale-base: 2;
 }
 
 * { box-sizing: border-box; }
@@ -50,7 +51,6 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 .segBtn { border: 0; border-radius: 0; }
 .segBtn.isActive { background: #2a3a53; }
 
-/* Monster grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
@@ -80,7 +80,6 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 .icon img { width: 100%; height: 100%; display: block; }
 .cardName { font-size: 12px; text-align: center; color: var(--muted); line-height: 1.2; min-height: 30px; }
 
-/* Inventory */
 .inventory {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -110,26 +109,26 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 .invSub { font-size: 12px; color: var(--muted); }
 .invItem input { width: 90px; }
 
-/* ===== Tree: NO WRAP, NO SCROLL, AUTO-SCALE via JS ===== */
+
 .tree {
   padding: 8px 6px;
-  overflow: hidden; /* ✅ без скролу */
+  overflow: hidden;
 }
 
-/* wrapper whose height we корректим in JS */
+
 .treeScaler {
   width: 100%;
   display: grid;
   justify-content: center;
 }
 
-/* actual content that gets scaled */
+
 .fuseTree {
   display: grid;
   justify-content: center;
   gap: 14px;
-  width: max-content;          /* ✅ важливо: ширина по контенту */
-  transform-origin: top center;/* ✅ масштаб від центру */
+  width: max-content;          
+  transform-origin: top center;
 }
 
 .fNode {
@@ -141,9 +140,9 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 }
 
 .fIconWrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+   width: calc(52px * var(--tree-scale-base));
+  height: calc(52px * var(--tree-scale-base));
+  border-radius: calc(18px * var(--tree-scale-base));
   border: 1px solid var(--line);
   overflow: hidden;
   background: #0e1622;
@@ -185,8 +184,8 @@ button:hover { background: var(--btnHover); cursor: pointer; }
   position: relative;
   padding-top: 12px;
 
-  flex-wrap: nowrap;     /* ✅ НЕ переносити */
-  max-width: none;       /* ✅ */
+  flex-wrap: nowrap;     
+  max-width: none;       
 }
 
 .fChildren::before {
@@ -199,17 +198,9 @@ button:hover { background: var(--btnHover); cursor: pointer; }
   background: var(--line);
   opacity: 0.6;
 }
-.fNode.hasKids::after {
-  content: "";
-  position: absolute;
-  top: 64px;
-  width: 2px;
-  height: 12px;
-  background: var(--line);
-  opacity: 0.6;
-}
 
-/* ===== Summary плитками ===== */
+
+
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -234,7 +225,7 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 .summaryItem span { color: var(--muted); font-size: 12px; }
 .summaryItem strong { font-size: 16px; }
 
-/* ===== Essence block ===== */
+
 .essPanel {
   margin-top: 12px;
   border: 1px solid var(--line);
@@ -287,7 +278,7 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 }
 .essRow strong { color: var(--text); font-weight: 800; }
 
-/* ===== Detail blocks in 3 columns ===== */
+
 .summaryLists {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -350,3 +341,94 @@ button:hover { background: var(--btnHover); cursor: pointer; }
 .badBad { color: var(--bad); }
 
 code { color: #c9d6e6; }
+
+.fStats{
+  display:grid;
+  gap:6px;
+   padding: calc(8px * var(--tree-scale-base)) calc(10px * var(--tree-scale-base));
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius: calc(14px * var(--tree-scale-base));
+  background: rgba(0,0,0,0.18);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  min-width: calc(112px * var(--tree-scale-base));
+}
+
+.fStatRow{
+  display:grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items:center;
+  gap:8px;
+  font-size: calc(12px * var(--tree-scale-base));
+}
+
+.fStatLabel{ color: var(--muted); }
+.fStatVal{
+  font-weight:800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.fStatDot{
+  width:8px; height:8px;
+  border-radius:999px;
+  background:#7f8c8d;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+}
+.dotNeed{ background: rgba(46,204,113,0.9); }
+.dotMiss{ background: rgba(255,107,107,0.95); }
+.dotOk{ background: rgba(46,204,113,0.65); }
+
+/* ===== grouping for children so it's clear which 4 belong to which parent ===== */
+.fChildGroup{
+  margin-top: 10px;
+  padding: 12px 12px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(0,0,0,0.10);
+  position: relative;
+}
+
+/* soft “bracket” feel */
+
+
+/* children row: keep one row, no wrap (you already have auto-scale JS) */
+.fChildren{
+  display:flex;
+  gap: calc(14px * var(--tree-scale-base));          /* трохи більше, щоб дихало */
+  justify-content:center;
+  align-items:flex-start;
+  flex-wrap: nowrap;
+  padding-top: 0;     /* вже є group padding */
+}
+
+/* прибираємо старі лінії всередині children, бо тепер є рамка */
+.fChildren::before { display:none; }
+
+/* трохи збільшимо відстань між “сіблінгами” одного рівня */
+.fuseTree{ gap: calc(18px * var(--tree-scale-base)); }
+
+/* опціонально: трохи округлити іконки, щоб вигляд був м’якший */
+.fIconWrap{
+  border-radius: 18px;
+}
+
+/* ✅ ingredients under each 4★: 2x2 grid instead of 4 вниз */
+.fChildren.vertical{
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 14px 16px;       /* row-gap / column-gap */
+  justify-content: center;
+  align-items: start;
+}
+
+/* ✅ vertical колонка для інгредієнтів ПІД кожним 4★ */
+.fChildren.vertical{
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* трошки вузькіше, щоб колонки були компактні */
+.fChildGroup{
+  padding: 10px 10px 8px;
+}
